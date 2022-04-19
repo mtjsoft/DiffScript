@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.5.21'
+}
+
+group 'cn.mtjsoft'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+    implementation 'net.sourceforge.argparse4j:argparse4j:0.9.0'
+    implementation files('libs/forms-1.1-preview.jar')
+    implementation files('libs/forms_rt.jar')
+}
+
+
+project.configurations.implementation.setCanBeResolved(true)
+
+jar {
+    manifest {
+        attributes(
+                "Can-Redefine-Classes": true,
+                "Can-Retransform-Classes": true,
+                "Main-Class": "cn.mtjsoft.AutoMain",
+                "Class-Path": configurations.implementation.collect { it.name }.join(' ')
+        )
+    }
+    from {
+        configurations.implementation.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    dependsOn('dependencies')
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
+}
