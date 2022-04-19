@@ -125,8 +125,9 @@ class AutoWindow : JFrame() {
             // 缓存当前选择的目录数据到文件
             cachePathData()
             // 过滤掉新版本
+            val newApkBean = FileUtils.apkToBean(newApkFile)
             val maxSize = oldApkFileList.filter {
-                it.versionName != newApkFile.parentFile.name
+                it.versionName.isNotEmpty() && it.versionName != newApkBean.versionName
             }.size
             setProgressBar(maxSize)
             result.text = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINESE).format(Date())
@@ -137,7 +138,7 @@ class AutoWindow : JFrame() {
                 val oldApk = task.file.absolutePath
                 val newApk = newApkPath
                 if (oldApk != newApkPath) {
-                    val patchName = "V${task.versionName}_V${newApkFile.parentFile.name}.patch"
+                    val patchName = "V${task.versionName}_V${newApkBean.versionName}.patch"
                     val patch = "${newApkFile.parentFile.absoluteFile}/${patchName}"
                     cmd(
                         "cd /d ${diffFile.parentFile.absoluteFile} && ${diffFile.name} $oldApk $newApk $patch",
@@ -271,6 +272,11 @@ class AutoWindow : JFrame() {
                 e.printStackTrace()
                 printResult(">>> " + e.message)
                 printResult("自动差分错误 >>> $s")
+                // 错误删除差分文件
+                val diffFile = File(diffFilePath)
+                if (diffFile.exists()) {
+                    diffFile.delete()
+                }
             } finally {
                 stopTime()
                 printResult("自动差分结束 >>> $s 耗时：${(System.currentTimeMillis() - startTime) / 1000}秒")

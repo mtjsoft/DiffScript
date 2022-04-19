@@ -3,6 +3,10 @@ package cn.mtjsoft.utils
 import cn.mtjsoft.bean.TaskDiffBean
 import java.io.*
 import java.util.*
+import java.io.File
+
+import net.dongliu.apk.parser.ApkFile
+import net.dongliu.apk.parser.bean.ApkMeta
 
 
 /**
@@ -65,14 +69,25 @@ object FileUtils {
                     findFileList(file, fileList)
                 } else {
                     if (file.name.toLowerCase().endsWith(".apk")) {
-                        fileList.add(TaskDiffBean(file.parentFile.name, file))
+                        fileList.add(apkToBean(file))
                     }
                 }
             }
         } else {
             if (dir.name.toLowerCase().endsWith(".apk")) {
-                fileList.add(TaskDiffBean(dir.parentFile.name, dir))
+                fileList.add(apkToBean(dir))
             }
         }
+    }
+
+    fun apkToBean(file: File): TaskDiffBean {
+        val versionName = try {
+            val apkFile = ApkFile(file)
+            val apkMeta = apkFile.apkMeta
+            apkMeta.versionName
+        } catch (e: Exception) {
+            ""
+        }
+        return TaskDiffBean(versionName, file)
     }
 }
