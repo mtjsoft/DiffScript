@@ -1,7 +1,11 @@
 package cn.mtjsoft.view
 
 import cn.mtjsoft.AutoScriptWindow
+import cn.mtjsoft.bean.DiffPatch
+import cn.mtjsoft.bean.VersionUpdateInfoBean
 import cn.mtjsoft.utils.FileUtils
+import cn.mtjsoft.utils.MD5Util
+import com.google.gson.Gson
 import java.awt.Desktop
 import java.awt.Image
 import java.awt.Toolkit
@@ -11,6 +15,7 @@ import java.awt.event.WindowListener
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.lang.StringBuilder
 import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,6 +43,9 @@ class AutoWindow : JFrame() {
 
     @Volatile
     private var startTime = System.currentTimeMillis()
+
+    @Volatile
+    private var mVersionUpdateInfoBean = VersionUpdateInfoBean()
 
     init {
         title = "APK差量包拆分工具v1.0.0"
@@ -130,6 +138,14 @@ class AutoWindow : JFrame() {
                 it.versionName.isNotEmpty() && it.versionName != newApkBean.versionName
             }.size
             setProgressBar(maxSize)
+            //
+            mVersionUpdateInfoBean = VersionUpdateInfoBean()
+            mVersionUpdateInfoBean.apply {
+                vesionName = newApkBean.versionName
+                apkSize = FileUtils.getFileSize(newApkFile)
+                md5 = MD5Util.getMd5ByFile(newApkFile)
+            }
+            //开始
             result.text = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINESE).format(Date())
             printResult("\n========完成差量任务数：0/${maxSize}")
             printResult("=====================================")
@@ -209,6 +225,8 @@ class AutoWindow : JFrame() {
             // 完成时，将完整日志保存至，资源文件目录
             printResult("=====================================")
             printResult("===========  全部差分完毕  =============")
+            // 输出版本json文件到新版本文件夹
+            outVersionFile()
             // 差分完毕，打开文件夹
             try {
                 if (autoScriptWindow.autoOpenCheck.isSelected) {
@@ -217,6 +235,20 @@ class AutoWindow : JFrame() {
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+        }
+    }
+
+    private fun outVersionFile() {
+        autoScriptWindow.apply {
+            val json = Gson().toJson(mVersionUpdateInfoBean)
+            val writeFile = File(File(newVersionInput.text).parentFile.absolutePath + File.separator + "${mVersionUpdateInfoBean.vesionName}_version.json")
+            if (writeFile.exists()) {
+                writeFile.delete()
+            }
+            FileUtils.writeStringToFile(
+                writeFile.absolutePath,
+                json
+            )
         }
     }
 
@@ -247,7 +279,7 @@ class AutoWindow : JFrame() {
     }
 
 
-    private fun cmd(stam: String, diffFilePath: String, s: String) {
+    private fun cmd(stam: String, diffFilePath: String, patchName: String) {
         singleThreadExecutor.execute {
             startTime = System.currentTimeMillis()
             startTime()
@@ -271,7 +303,7 @@ class AutoWindow : JFrame() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 printResult(">>> " + e.message)
-                printResult("自动差分错误 >>> $s")
+                printResult("自动差分错误 >>> $patchName")
                 // 错误删除差分文件
                 val diffFile = File(diffFilePath)
                 if (diffFile.exists()) {
@@ -279,10 +311,21 @@ class AutoWindow : JFrame() {
                 }
             } finally {
                 stopTime()
-                printResult("自动差分结束 >>> $s 耗时：${(System.currentTimeMillis() - startTime) / 1000}秒")
+                printResult("自动差分结束 >>> $patchName 耗时：${(System.currentTimeMillis() - startTime) / 1000}秒")
+                addPatchBeanData(diffFilePath, patchName)
                 updateProgressBar()
             }
         }
+    }
+
+    private fun addPatchBeanData(diffFilePath: String, patchName: String) {
+        mVersionUpdateInfoBean.diffPatchs.add(
+            DiffPatch(
+                patchName = patchName,
+                md5 = MD5Util.getMd5ByFile(File(diffFilePath)),
+                patchSize = FileUtils.getFileSize(File(diffFilePath))
+            )
+        )
     }
 
     /**

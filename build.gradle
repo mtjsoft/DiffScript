@@ -21,6 +21,7 @@ dependencies {
     implementation files('libs/forms-1.1-preview.jar')
     implementation files('libs/forms_rt.jar')
     implementation files('libs/apk-parser-2.6.10.jar')
+    implementation files('libs/gson-2.8.5.jar')
 }
 
 
