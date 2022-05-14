@@ -16,7 +16,7 @@ APK增量更新时，批量进行差量包打包的脚本工具
 
 <img src="https://raw.githubusercontent.com/mtjsoft/DiffScript/master/images/diffscript.png" alt="Use" />
 </br>
-1、【差分工具选择】，已经默认选择了，不需要动。</br>
+1、【差分工具选择】，也就是下载工具目录下的bsdiff.exe文件，选它就行。</br>
 2、【旧版本安装包】，选择旧版本APK安装包所在的文件夹（可以有多个，脚本会扫描文件夹下所有的APK，依次进行差量打包）</br>
 3、【新版本安装包】，选择最新版本的安装包APK文件。（可以放到上一步的同一个文件夹里，脚本扫描时，会自动根据版本名称进行区分）</br>
 
