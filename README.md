@@ -4,8 +4,13 @@ APK增量更新时，批量进行差量包打包的脚本工具
 
 ### 1、下载运行工具
 
-下载tools目录下的脚本工具。双击 startUp.bat 运行。
+#### ①已安装java运行环境的，可以下载tools目录
+双击 startUp.bat 运行。</br>
 <img src="https://raw.githubusercontent.com/mtjsoft/DiffScript/master/images/tool.png" alt="Use" />
+
+#### ②未安装java运行环境的，可以下载tools2exe目录
+双击 DiffScript.exe 运行。</br>
+<img src="https://raw.githubusercontent.com/mtjsoft/DiffScript/master/images/tool_exe.jpg" alt="Use" />
 
 ### 2、如何使用
 
